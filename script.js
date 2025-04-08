@@ -1,0 +1,408 @@
+// API Keys - Replace these with your actual API keys
+const NEWS_API_KEY = "3d7fb2fdb06d49b3aeebb560c983273a";
+
+// DOM Elements
+const bitcoinPriceElement = document.getElementById("bitcoin-price");
+const priceChangeElement = document.getElementById("price-change");
+const priceChart = document.getElementById("priceChart");
+const burger = document.querySelector(".burger");
+const navLinks = document.querySelector(".nav-links");
+
+// CFD Calculator Elements
+const positionType = document.getElementById("position-type");
+const entryPrice = document.getElementById("entry-price");
+const exitPrice = document.getElementById("exit-price");
+const marginRequirement = document.getElementById("margin-requirement");
+const leverageRatio = document.getElementById("leverage-ratio");
+const calculateProfitBtn = document.getElementById("calculate-profit");
+const profitResult = document.getElementById("profit-result");
+
+const positionSize = document.getElementById("position-size");
+const marginLeverage = document.getElementById("margin-leverage");
+const calculateMarginBtn = document.getElementById("calculate-margin");
+const marginResult = document.getElementById("margin-result");
+
+// Tab Elements
+const tabButtons = document.querySelectorAll(".tab-btn");
+const calculators = document.querySelectorAll(".calculator");
+
+// Tab Switching
+tabButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    // Remove active class from all buttons and calculators
+    tabButtons.forEach((btn) => btn.classList.remove("active"));
+    calculators.forEach((calc) => calc.classList.remove("active"));
+
+    // Add active class to clicked button and corresponding calculator
+    button.classList.add("active");
+    const tabId = button.getAttribute("data-tab");
+    document.getElementById(`${tabId}-calculator`).classList.add("active");
+  });
+});
+
+// Mobile Navigation
+burger.addEventListener("click", () => {
+  navLinks.classList.toggle("active");
+  burger.classList.toggle("active");
+  document.body.style.overflow = navLinks.classList.contains("active")
+    ? "hidden"
+    : "";
+});
+
+// Close mobile menu when clicking on a nav link
+document.querySelectorAll(".nav-links a").forEach((link) => {
+  link.addEventListener("click", () => {
+    navLinks.classList.remove("active");
+    burger.classList.remove("active");
+    document.body.style.overflow = "";
+  });
+});
+
+// CFD Profit Calculator
+function calculateProfit() {
+  const isLong = positionType.value === "long";
+  const entry = parseFloat(entryPrice.value);
+  const exit = parseFloat(exitPrice.value);
+  const margin = parseFloat(marginRequirement.value);
+  const leverage = parseFloat(leverageRatio.value);
+
+  if (isNaN(entry) || isNaN(exit) || isNaN(margin) || isNaN(leverage)) {
+    profitResult.textContent = "Voer geldige getallen in";
+    return;
+  }
+
+  const priceDifference = isLong ? exit - entry : entry - exit;
+  const profit = (priceDifference * margin * leverage) / entry;
+  profitResult.textContent = `$${profit.toFixed(2)}`;
+  profitResult.style.color =
+    profit >= 0 ? "var(--success-color)" : "var(--error-color)";
+}
+
+// CFD Margin Calculator
+function calculateMargin() {
+  const size = parseFloat(positionSize.value);
+  const leverage = parseFloat(marginLeverage.value);
+
+  if (isNaN(size) || isNaN(leverage)) {
+    marginResult.textContent = "Voer geldige getallen in";
+    return;
+  }
+
+  const margin = size / leverage;
+  marginResult.textContent = `$${margin.toFixed(2)}`;
+}
+
+// Event Listeners for CFD Calculators
+calculateProfitBtn.addEventListener("click", calculateProfit);
+calculateMarginBtn.addEventListener("click", calculateMargin);
+
+// Bitcoin Price Chart
+let priceChartInstance = null;
+let lastPrice = null;
+let isFirstLoad = true;
+
+// Store price history
+let priceHistory = [];
+
+async function fetchBitcoinPrice() {
+  try {
+    bitcoinPriceElement.textContent = "Laden...";
+    priceChangeElement.textContent = "";
+
+    // Try CoinDesk v1 API first
+    const response = await fetch(
+      "https://api.coindesk.com/v1/bpi/currentprice.json",
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Get the USD price and remove commas
+    const price = parseFloat(data.bpi.USD.rate.replace(/,/g, ""));
+
+    // Calculate 24h change (Note: CoinDesk doesn't provide 24h change directly)
+    // We'll use the last price to calculate the change
+    const change = lastPrice ? ((price - lastPrice) / lastPrice) * 100 : 0;
+
+    return {
+      price: price,
+      change: change,
+    };
+  } catch (error) {
+    console.error("Error fetching Bitcoin price from CoinDesk:", error);
+
+    // Try fallback to Binance API if CoinDesk fails
+    try {
+      const fallbackResponse = await fetch(
+        "https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT"
+      );
+      if (!fallbackResponse.ok) {
+        throw new Error(
+          `Fallback API error! status: ${fallbackResponse.status}`
+        );
+      }
+      const fallbackData = await fallbackResponse.json();
+
+      return {
+        price: parseFloat(fallbackData.lastPrice),
+        change: parseFloat(fallbackData.priceChangePercent),
+      };
+    } catch (fallbackError) {
+      console.error(
+        "Error fetching Bitcoin price from fallback API:",
+        fallbackError
+      );
+      bitcoinPriceElement.textContent = "Koers niet beschikbaar";
+      priceChangeElement.textContent = "";
+      return null;
+    }
+  }
+}
+
+async function fetchHistoricalData(currentPrice) {
+  try {
+    // Only return current price point
+    return [
+      {
+        timestamp: new Date(),
+        price: currentPrice,
+      },
+    ];
+  } catch (error) {
+    console.error("Error generating historical data:", error);
+    return null;
+  }
+}
+
+async function updateBitcoinPrice() {
+  const data = await fetchBitcoinPrice();
+  if (data && data.price) {
+    const price = data.price;
+    const change = data.change;
+
+    // Format price in Dutch locale with USD symbol
+    bitcoinPriceElement.textContent = `$${price.toLocaleString("nl-NL", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+    priceChangeElement.textContent = `${change >= 0 ? "+" : ""}${change.toFixed(
+      2
+    )}%`;
+    priceChangeElement.style.color =
+      change >= 0 ? "var(--success-color)" : "var(--error-color)";
+
+    lastPrice = price;
+
+    // Update chart data
+    const historicalData = await fetchHistoricalData(price);
+    if (historicalData) {
+      updateChart(historicalData);
+    }
+  }
+}
+
+function updateChart(historicalData) {
+  if (!historicalData) return;
+
+  // Add new data point to history
+  priceHistory.push(historicalData[0]);
+
+  // Keep only last 24 hours of data
+  const oneDayAgo = new Date().getTime() - 24 * 60 * 60 * 1000;
+  priceHistory = priceHistory.filter(
+    (point) => point.timestamp.getTime() > oneDayAgo
+  );
+
+  const ctx = priceChart.getContext("2d");
+
+  if (priceChartInstance) {
+    priceChartInstance.destroy();
+  }
+
+  priceChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: priceHistory.map((item) =>
+        new Date(item.timestamp).toLocaleTimeString("nl-NL")
+      ),
+      datasets: [
+        {
+          label: "Bitcoin Koers (USD) - Realtime Data",
+          data: priceHistory.map((item) => item.price),
+          borderColor: "#f7931a",
+          backgroundColor: "rgba(247, 147, 26, 0.2)",
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: "#f7931a",
+          pointBorderColor: "#FFFFFF",
+          pointRadius: 3,
+          pointHoverRadius: 5,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: false,
+          grid: {
+            color: "rgba(255, 255, 255, 0.2)",
+            drawBorder: true,
+            borderColor: "rgba(255, 255, 255, 0.3)",
+          },
+          ticks: {
+            color: "#FFFFFF",
+            font: {
+              size: 12,
+            },
+            callback: function (value) {
+              return (
+                "$" +
+                value.toLocaleString("nl-NL", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
+              );
+            },
+          },
+        },
+        x: {
+          grid: {
+            color: "rgba(255, 255, 255, 0.2)",
+            drawBorder: true,
+            borderColor: "rgba(255, 255, 255, 0.3)",
+          },
+          ticks: {
+            color: "#FFFFFF",
+            font: {
+              size: 12,
+            },
+          },
+        },
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: "#FFFFFF",
+          },
+        },
+      },
+    },
+  });
+}
+
+// Initial price update
+updateBitcoinPrice();
+
+// Update price every 60 seconds
+setInterval(updateBitcoinPrice, 5000);
+
+// Tooltip functionality
+document.addEventListener("DOMContentLoaded", function () {
+  const tooltips = document.querySelectorAll(".info-tooltip");
+
+  tooltips.forEach((tooltip) => {
+    tooltip.addEventListener("click", function (e) {
+      e.stopPropagation();
+
+      // Close all other tooltips
+      tooltips.forEach((t) => {
+        if (t !== tooltip) {
+          t.classList.remove("active");
+        }
+      });
+
+      // Toggle current tooltip
+      tooltip.classList.toggle("active");
+    });
+  });
+
+  // Close tooltip when clicking outside
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest(".info-tooltip")) {
+      tooltips.forEach((tooltip) => {
+        tooltip.classList.remove("active");
+      });
+    }
+  });
+});
+
+// Market News Feed
+const marketNewsContainer = document.getElementById("market-news");
+
+async function fetchMarketNews() {
+  try {
+    const response = await fetch(
+      "https://mcgrp.app.n8n.cloud/webhook/rss-bitcoin-koers-dollar"
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch market news");
+    }
+    const text = await response.text();
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(text, "text/xml");
+
+    // Extract items from RSS feed
+    const items = xmlDoc.getElementsByTagName("item");
+    const newsItems = Array.from(items).map((item) => {
+      const title = item.getElementsByTagName("title")[0]?.textContent || "";
+      const link = item.getElementsByTagName("link")[0]?.textContent || "";
+      return { title, link };
+    });
+
+    displayMarketNews(newsItems);
+  } catch (error) {
+    console.error("Error fetching market news:", error);
+    marketNewsContainer.innerHTML = `
+      <div class="news-item">
+        <p>Nieuws niet beschikbaar op dit moment. Probeer het later opnieuw.</p>
+      </div>
+    `;
+  }
+}
+
+function displayMarketNews(newsItems) {
+  if (!newsItems || !Array.isArray(newsItems) || newsItems.length === 0) {
+    marketNewsContainer.innerHTML = `
+      <div class="news-item">
+        <p>Geen nieuws beschikbaar op dit moment.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const newsHTML = newsItems
+    .map((item) => {
+      const faviconUrl = `https://www.google.com/s2/favicons?domain=${
+        new URL(item.link).hostname
+      }`;
+      return `
+        <div class="news-item">
+          <a href="${item.link}" target="_blank" rel="noopener noreferrer">
+            <img src="${faviconUrl}" alt="favicon" class="news-favicon" />
+            <span class="news-title">${item.title}</span>
+          </a>
+        </div>
+      `;
+    })
+    .join("");
+
+  marketNewsContainer.innerHTML = newsHTML;
+}
+
+// Initial news fetch
+fetchMarketNews();
+
+// Update news every 5 minutes
+setInterval(fetchMarketNews, 5 * 60 * 1000);

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <!-- Schema.org markup for Google+ -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FinancialService",
+        "name": "Bitcoin Trading Platform - Realtime Bitcoin Koersen & CFD Rekenmachines",
+        "description": "Realtime Bitcoin koersen, CFD trading rekenmachines en marktinzichten. Bereken winst, verlies en margevereisten voor Bitcoin CFD trading.",
+        "url": "https://bitcoin-koers-dollar.nl",
+        "logo": "https://bitcoin-koers-dollar.nl/logo.png",
+        "offers": {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Bitcoin Trading Platform - Realtime Bitcoin Koersen & CFD Rekenmachines",
+            "description": "Realtime Bitcoin koersen, CFD trading rekenmachines en marktinzichten. Bereken winst, verlies en margevereisten voor Bitcoin CFD trading."
+          }
+        }
+      }
+    </script>
+
+    <!-- Google Tag Manager -->
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-TSDBHZDK");
+    </script>
+    <!-- End Google Tag Manager -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Realtime Bitcoin koersen, CFD trading rekenmachines en marktinzichten. Bereken winst, verlies en margevereisten voor Bitcoin CFD trading."
+    />
+    <meta
+      name="keywords"
+      content="bitcoin trading, bitcoin CFD trading, live bitcoin koersen, CFD winst calculator, marge calculator, daghandel tools, Bitcoin Koers Dollar"
+    />
+    <title>
+      Bitcoin Trading Platform - Realtime Bitcoin Koersen & CFD Rekenmachines
+    </title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="logo.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript
+      ><iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-TSDBHZDK"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe
+    ></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <nav class="navbar">
+      <a href="#home" class="logo">BitcoinKoersDollar.nl</a>
+      <ul class="nav-links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#market-insights">Realtime Nieuws</a></li>
+        <li><a href="#tools">CFD Rekenmachines</a></li>
+        <li>
+          <a
+            href="https://www.mcmarkets.com/en-US/support?utm_source=bitcoin-koers-dollar.nl&utm_medium=referral&utm_campaign=contact_btn"
+            target="_blank"
+            >Neem Contact Op</a
+          >
+        </li>
+      </ul>
+      <div class="burger">
+        <div class="line1"></div>
+        <div class="line2"></div>
+        <div class="line3"></div>
+      </div>
+    </nav>
+
+    <main>
+      <section id="home" class="section">
+        <div class="container">
+          <h1>Bitcoin Trading Platform</h1>
+          <p id="prices" class="description">
+            Realtime Bitcoin koersen, trading tools en marktinzichten
+          </p>
+          <div class="price-container">
+            <h2>Huidige Bitcoin Koers</h2>
+            <div class="trade-buttons">
+              <a
+                href="https://mcmarkets.com/en-US/backend/tradeCenter?name=BTCUSD&symbolId=BTCUSD&tradeType=1&handleType=buy&utm_source=bitcoin-koers-dollar.nl&utm_medium=referral&utm_campaign=buy_btn"
+                target="_blank"
+                class="btn buy-btn"
+                >Bitcoin Kopen</a
+              >
+              <a
+                href="https://mcmarkets.com/en-US/backend/tradeCenter?name=BTCUSD&symbolId=BTCUSD&tradeType=1&handleType=sell&utm_source=bitcoin-koers-dollar.nl&utm_medium=referral&utm_campaign=sell_btn"
+                target="_blank"
+                class="btn sell-btn"
+                >Bitcoin Verkopen</a
+              >
+            </div>
+            <div class="current-price">
+              <span id="bitcoin-price">$0.00</span>
+              <span id="price-change">+0.00%</span>
+              <div class="price-update-indicator">Live</div>
+            </div>
+            <div class="chart-container">
+              <canvas id="priceChart"></canvas>
+              <div class="chart-update-indicator">Bijwerken</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="market-insights" class="section">
+        <div class="container">
+          <h2>Realtime Marktinzichten</h2>
+          <p class="insights-description">
+            Blijf op de hoogte van de laatste marktontwikkelingen en Bitcoin
+            nieuws
+          </p>
+          <div class="news-feed">
+            <div class="news-container">
+              <div id="market-news" class="news-items">
+                <!-- News items will be dynamically loaded here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tools" class="section">
+        <div class="container">
+          <h2>CFD Trading Calculator</h2>
+          <p class="calculator-description">
+            Bereken CFD winst, verlies en margevereisten voor zowel long als
+            short posities
+          </p>
+          <div class="calculator-tabs">
+            <button class="tab-btn active" data-tab="profit">
+              CFD Winst Calculator
+            </button>
+            <button class="tab-btn" data-tab="margin">
+              CFD Marge Calculator
+            </button>
+          </div>
+          <div class="calculator-wrapper">
+            <div id="profit-calculator" class="calculator active">
+              <div class="calculator-header">
+                <h3>CFD Winst Calculator</h3>
+                <div class="info-tooltip">
+                  <i class="fas fa-info-circle"></i>
+                  <div class="tooltip-content">
+                    <h4>Hoe gebruik je deze calculator</h4>
+                    <ol>
+                      <li>Selecteer je positie type (Long of Short)</li>
+                      <li>Voer je in- en uitstapprijzen in</li>
+                      <li>Voer je margevereiste in</li>
+                      <li>Selecteer je hefboomratio</li>
+                      <li>
+                        Klik op "Bereken" om je potentiële winst/verlies te zien
+                      </li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="position-type">Positie Type</label>
+                <select id="position-type">
+                  <option value="long">Long</option>
+                  <option value="short">Short</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label for="entry-price">Instapprijs</label>
+                <input type="number" id="entry-price" step="0.0001" />
+              </div>
+              <div class="input-group">
+                <label for="exit-price">Uitstapprijs</label>
+                <input type="number" id="exit-price" step="0.0001" />
+              </div>
+              <div class="input-group">
+                <label for="margin-requirement">Margevereiste</label>
+                <input type="number" id="margin-requirement" step="0.01" />
+              </div>
+              <div class="input-group">
+                <label for="leverage-ratio">Hefboomratio</label>
+                <input type="number" id="leverage-ratio" min="1" step="1" />
+              </div>
+              <button id="calculate-profit" class="calculate-btn">
+                Bereken Winst
+              </button>
+              <div class="results">
+                <div class="result-item">
+                  <span class="result-label">Winst/Verlies:</span>
+                  <span id="profit-result" class="result-value">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="margin-calculator" class="calculator">
+              <div class="calculator-header">
+                <h3>CFD Marge Calculator</h3>
+                <div class="info-tooltip">
+                  <i class="fas fa-info-circle"></i>
+                  <div class="tooltip-content">
+                    <h4>Hoe gebruik je deze calculator</h4>
+                    <ol>
+                      <li>Voer je gewenste positiegrootte in</li>
+                      <li>Selecteer je hefboomratio</li>
+                      <li>Klik op "Bereken" om de benodigde marge te zien</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="position-size">Positiegrootte</label>
+                <input type="number" id="position-size" step="0.01" />
+              </div>
+              <div class="input-group">
+                <label for="margin-leverage">Hefboomratio</label>
+                <input type="number" id="margin-leverage" min="1" step="1" />
+              </div>
+              <button id="calculate-margin" class="calculate-btn">
+                Bereken Marge
+              </button>
+              <div class="results">
+                <div class="result-item">
+                  <span class="result-label">Margevereiste:</span>
+                  <span id="margin-result" class="result-value">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        <p>&copy; 2025 Bitcoin Trading Platform. Alle rechten voorbehouden.</p>
+        <p>
+          <a
+            href="https://www.mcmarkets.com/en-US/support?utm_source=bitcoin-koers-dollar.nl&utm_medium=referral&utm_campaign=contact_btn"
+            target="_blank"
+            >Neem Contact Op</a
+          >
+        </p>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
