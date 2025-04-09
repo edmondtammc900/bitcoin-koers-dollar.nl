@@ -153,10 +153,34 @@
               <canvas id="volumeChart"></canvas>
               <div class="interval-toggle">
                 <button class="interval-btn active" data-interval="1m">
-                  1分鐘
+                  1 minuut
                 </button>
-                <button class="interval-btn" data-interval="5m">5分鐘</button>
-                <button class="interval-btn" data-interval="1h">1小時</button>
+                <button class="interval-btn" data-interval="5m">
+                  5 minuten
+                </button>
+                <button class="interval-btn" data-interval="1h">1 uur</button>
+              </div>
+            </div>
+            <div class="market-depth-container">
+              <h3>Marktdiepte</h3>
+              <div class="depth-chart-container">
+                <canvas id="depthChart"></canvas>
+              </div>
+              <div class="order-book-container">
+                <div class="order-book">
+                  <div class="order-book-header">
+                    <h4>Biedingen</h4>
+                    <h4>Vragen</h4>
+                  </div>
+                  <div class="order-book-content">
+                    <div class="bids-list">
+                      <!-- Bids will be populated here -->
+                    </div>
+                    <div class="asks-list">
+                      <!-- Asks will be populated here -->
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

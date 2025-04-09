@@ -223,7 +223,11 @@ function updateVolumeChart(volumeData, interval = "5m") {
       datasets: [
         {
           label: `Handelsvolume (BTC) - ${
-            interval === "1m" ? "1分鐘" : interval === "5m" ? "5分鐘" : "1小時"
+            interval === "1m"
+              ? "1 minuut"
+              : interval === "5m"
+              ? "5 minuten"
+              : "1 uur"
           }`,
           data: volumeData.map((item) => item.volume),
           backgroundColor: "rgba(247, 147, 26, 0.5)",
@@ -578,3 +582,186 @@ fetchMarketNews();
 
 // Update news every 5 minutes
 setInterval(fetchMarketNews, 5 * 60 * 1000);
+
+let depthChartInstance = null;
+
+async function fetchOrderBook() {
+  try {
+    const response = await fetch(
+      "https://api.binance.com/api/v3/depth?symbol=BTCUSDT&limit=1000"
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return {
+      bids: data.bids.map(([price, quantity]) => ({
+        price: parseFloat(price),
+        quantity: parseFloat(quantity),
+      })),
+      asks: data.asks.map(([price, quantity]) => ({
+        price: parseFloat(price),
+        quantity: parseFloat(quantity),
+      })),
+    };
+  } catch (error) {
+    console.error("Error fetching order book:", error);
+    return null;
+  }
+}
+
+function updateDepthChart(orderBook) {
+  if (!orderBook) return;
+
+  const ctx = document.getElementById("depthChart").getContext("2d");
+  if (depthChartInstance) {
+    depthChartInstance.destroy();
+  }
+
+  // Calculate cumulative quantities
+  let cumulativeBids = 0;
+  let cumulativeAsks = 0;
+
+  const bids = orderBook.bids
+    .map((bid) => {
+      cumulativeBids += bid.quantity;
+      return {
+        price: bid.price,
+        quantity: cumulativeBids,
+      };
+    })
+    .reverse();
+
+  const asks = orderBook.asks.map((ask) => {
+    cumulativeAsks += ask.quantity;
+    return {
+      price: ask.price,
+      quantity: cumulativeAsks,
+    };
+  });
+
+  depthChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      datasets: [
+        {
+          label: "Biedingen",
+          data: bids.map((bid) => ({
+            x: bid.price,
+            y: bid.quantity,
+          })),
+          borderColor: "rgba(0, 255, 0, 0.8)",
+          backgroundColor: "rgba(0, 255, 0, 0.1)",
+          fill: true,
+          tension: 0.4,
+        },
+        {
+          label: "Vragen",
+          data: asks.map((ask) => ({
+            x: ask.price,
+            y: ask.quantity,
+          })),
+          borderColor: "rgba(255, 0, 0, 0.8)",
+          backgroundColor: "rgba(255, 0, 0, 0.1)",
+          fill: true,
+          tension: 0.4,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          type: "linear",
+          position: "bottom",
+          title: {
+            display: true,
+            text: "Prijs (USD)",
+          },
+          grid: {
+            color: "rgba(255, 255, 255, 0.1)",
+          },
+          ticks: {
+            color: "#fff",
+          },
+        },
+        y: {
+          title: {
+            display: true,
+            text: "Cumulatief Volume (BTC)",
+          },
+          grid: {
+            color: "rgba(255, 255, 255, 0.1)",
+          },
+          ticks: {
+            color: "#fff",
+          },
+        },
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: "#fff",
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              return `${context.dataset.label}: ${context.parsed.y.toFixed(
+                4
+              )} BTC @ $${context.parsed.x.toFixed(2)}`;
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+function updateOrderBook(orderBook) {
+  const bidsList = document.querySelector(".bids-list");
+  const asksList = document.querySelector(".asks-list");
+
+  // Clear existing orders
+  bidsList.innerHTML = "";
+  asksList.innerHTML = "";
+
+  // Display top 10 bids and asks
+  const topBids = orderBook.bids.slice(0, 10);
+  const topAsks = orderBook.asks.slice(0, 10);
+
+  topBids.forEach((bid) => {
+    const orderItem = document.createElement("div");
+    orderItem.className = "order-item";
+    orderItem.innerHTML = `
+      <span class="order-price">$${bid.price.toFixed(2)}</span>
+      <span class="order-amount">${bid.quantity.toFixed(4)}</span>
+    `;
+    bidsList.appendChild(orderItem);
+  });
+
+  topAsks.forEach((ask) => {
+    const orderItem = document.createElement("div");
+    orderItem.className = "order-item";
+    orderItem.innerHTML = `
+      <span class="order-price">$${ask.price.toFixed(2)}</span>
+      <span class="order-amount">${ask.quantity.toFixed(4)}</span>
+    `;
+    asksList.appendChild(orderItem);
+  });
+}
+
+async function updateMarketDepth() {
+  const orderBook = await fetchOrderBook();
+  if (orderBook) {
+    updateDepthChart(orderBook);
+    updateOrderBook(orderBook);
+  }
+}
+
+// Initial update
+updateMarketDepth();
+
+// Update every 5 seconds
+setInterval(updateMarketDepth, 5000);
