@@ -142,67 +142,21 @@ body {
 }
 
 /* Mobile Navigation */
-@media screen and (max-width: 768px) {
-  .navbar {
-    padding: 0.8rem 1rem;
-    position: fixed;
-    top: 30px;
-    width: 100%;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .logo-text {
-    font-size: 1rem;
-  }
-
-  .nav-cta-btn {
-    display: none;
-  }
-
-  .nav-cta-btn2 {
-    display: block;
-    position: absolute;
-    right: 53px;
-    top: 45%;
-    transform: translateY(-50%);
-    padding: 0.3rem 0.8rem !important;
-    font-size: 0.8rem !important;
-    margin: 0;
-    white-space: nowrap;
-  }
-
-  .nav-cta-btn2:hover {
-    transform: translateY(-50%) scale(1.05);
-    box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
-  }
-
-  .burger {
-    display: block;
-    position: absolute;
-    right: 14px;
-    top: 45%;
-    transform: translateY(-50%);
-  }
-
+@media (max-width: 768px) {
   .nav-links {
     position: fixed;
     right: -100%;
     top: 0;
     height: 100vh;
-    width: 100%;
     background-color: var(--card-bg);
+    display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    transition: right 0.5s ease-in-out;
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
-    border-left: 1px solid var(--border-color);
+    width: 100%;
+    transition: 0.5s;
+    padding-top: 60px;
+    z-index: 1000;
+    overflow-y: auto;
   }
 
   .nav-links.active {
@@ -210,8 +164,9 @@ body {
   }
 
   .nav-links a {
-    font-size: 1.2rem;
-    padding: 1rem 2rem;
+    margin: 0.5rem 0;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
     width: 100%;
     text-align: center;
     border-bottom: 1px solid var(--border-color);
@@ -221,125 +176,43 @@ body {
     border-bottom: none;
   }
 
-  .section {
-    padding: 80px 0 40px;
-    min-height: auto;
-  }
-
-  .container {
-    padding: 0;
-  }
-
-  #home {
-    padding: 80px 0 20px;
-    min-height: auto;
-  }
-
-  #home .container {
-    padding: 0 15px;
-    gap: 1rem;
-  }
-
-  #home h1 {
-    font-size: 2.2rem;
-    margin-bottom: 0.5rem;
-    text-align: center;
-    width: 100%;
-  }
-
-  #home p {
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    width: 100%;
-  }
-
-  .price-container {
-    padding: 1rem;
-    margin: 0;
-    border-radius: 0;
-  }
-
-  .current-price {
-    font-size: 1.8rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .price-info {
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
-  }
-
-  #gold-price {
-    display: inline;
-    text-align: center;
-    margin-bottom: 0;
-  }
-
-  #price-change {
-    display: inline;
-    text-align: center;
-    margin-top: 0;
-  }
-
-  .refresh-btn {
-    margin-left: 0.5rem;
-    margin-top: 0;
-  }
-
-  .chart-container {
-    height: 250px;
+  .language-switcher {
     margin: 0;
     padding: 0.5rem;
-    border-radius: 0;
+    border-top: 1px solid var(--border-color);
+    width: 100%;
+    justify-content: center;
+    order: -1;
   }
 
-  .chart-update-indicator {
-    font-size: 0.7rem;
-    bottom: 0.5rem;
-    right: 0.5rem;
+  .burger {
+    display: block;
   }
 
-  .logo-img {
-    height: 30px;
+  .nav-links {
+    padding-bottom: 1rem;
   }
 
-  .logo-text {
-    font-size: 1rem;
+  .nav-links a,
+  .language-switcher {
+    padding: 0.4rem 0.8rem;
+  }
+
+  .lang-btn {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.9rem;
   }
 }
 
-/* Small Mobile Devices */
-@media screen and (max-width: 480px) {
-  .section {
-    padding: 60px 0 20px;
+/* Desktop Navigation */
+@media (min-width: 769px) {
+  .nav-links {
+    display: flex;
+    align-items: center;
   }
 
-  #home {
-    padding: 60px 0 20px;
-  }
-
-  #home .container {
-    padding: 0 10px;
-    gap: 1rem;
-  }
-
-  #home h1 {
-    font-size: 1.8rem;
-  }
-
-  .price-container {
-    padding: 0.5rem;
-  }
-
-  .current-price {
-    font-size: 1.5rem;
-  }
-
-  .chart-container {
-    height: 200px;
+  .language-switcher {
+    margin-left: auto;
   }
 }
 
@@ -1470,4 +1343,32 @@ main {
   .order-book {
     max-width: 100%;
   }
+}
+
+/* Language Switcher */
+.language-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 1rem;
+}
+
+.lang-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text-color);
+  background-color: var(--accent-color);
+  transition: all 0.3s ease;
+}
+
+.lang-btn:hover {
+  background-color: var(--primary-color);
+  color: #000;
+}
+
+.lang-btn.active {
+  background-color: var(--primary-color);
+  color: #000;
 }

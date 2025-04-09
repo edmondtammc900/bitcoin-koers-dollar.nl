@@ -530,12 +530,20 @@ async function fetchMarketNews() {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(text, "text/xml");
 
+    // Check if we're on the English version
+    const isEnglish = window.location.pathname.includes("/en/");
+
     // Extract items from RSS feed
     const items = xmlDoc.getElementsByTagName("item");
-    const newsItems = Array.from(items).map((item) => ({
-      title: item.getElementsByTagName("title")[0]?.textContent || "",
-      link: item.getElementsByTagName("link")[0]?.textContent || "",
-    }));
+    const newsItems = Array.from(items).map((item) => {
+      const title = isEnglish
+        ? item.getElementsByTagName("title_EN")[0]?.textContent
+        : item.getElementsByTagName("title")[0]?.textContent;
+      return {
+        title: title || "",
+        link: item.getElementsByTagName("link")[0]?.textContent || "",
+      };
+    });
 
     // Update both news feed and ticker
     displayMarketNews(newsItems);
@@ -765,3 +773,113 @@ updateMarketDepth();
 
 // Update every 5 seconds
 setInterval(updateMarketDepth, 5000);
+
+// Translation data
+const translations = {
+  en: {
+    "nav.home": "Home",
+    "nav.about": "About",
+    "nav.services": "Services",
+    "nav.contact": "Contact",
+    "home.title": "Bitcoin Price Dollar",
+    "home.subtitle":
+      "Real-time Bitcoin prices, trading tools and market insights",
+    "prices.title": "Current Bitcoin Price",
+    "prices.buy": "Buy Bitcoin",
+    "prices.sell": "Sell Bitcoin",
+    "market.title": "Real-time Market Insights",
+    "market.subtitle":
+      "Stay updated with the latest market developments and Bitcoin news",
+    "tools.title": "CFD Trading Calculator",
+    "tools.subtitle":
+      "Calculate CFD profit, loss and margin requirements for both long and short positions",
+    "tools.profit": "CFD Profit Calculator",
+    "tools.margin": "CFD Margin Calculator",
+    "tools.calculate": "Calculate",
+    "tools.position": "Position Type",
+    "tools.entry": "Entry Price",
+    "tools.exit": "Exit Price",
+    "tools.margin_req": "Margin Requirement",
+    "tools.leverage": "Leverage Ratio",
+    "tools.position_size": "Position Size",
+    "tools.result": "Result",
+    "footer.copyright": "© 2025 Bitcoin Trading Platform. All rights reserved.",
+    "footer.contact": "Contact Us",
+  },
+  nl: {
+    "nav.home": "Home",
+    "nav.about": "Over Ons",
+    "nav.services": "Diensten",
+    "nav.contact": "Contact",
+    "home.title": "Bitcoin Koers Dollar",
+    "home.subtitle":
+      "Realtime Bitcoin koersen, trading tools en marktinzichten",
+    "prices.title": "Huidige Bitcoin Koers",
+    "prices.buy": "Bitcoin Kopen",
+    "prices.sell": "Bitcoin Verkopen",
+    "market.title": "Realtime Marktinzichten",
+    "market.subtitle":
+      "Blijf op de hoogte van de laatste marktontwikkelingen en Bitcoin nieuws",
+    "tools.title": "CFD Trading Calculator",
+    "tools.subtitle":
+      "Bereken CFD winst, verlies en margevereisten voor zowel long als short posities",
+    "tools.profit": "CFD Winst Calculator",
+    "tools.margin": "CFD Marge Calculator",
+    "tools.calculate": "Bereken",
+    "tools.position": "Positie Type",
+    "tools.entry": "Instapprijs",
+    "tools.exit": "Uitstapprijs",
+    "tools.margin_req": "Margevereiste",
+    "tools.leverage": "Hefboomratio",
+    "tools.position_size": "Positiegrootte",
+    "tools.result": "Resultaat",
+    "footer.copyright":
+      "© 2025 Bitcoin Trading Platform. Alle rechten voorbehouden.",
+    "footer.contact": "Neem Contact Op",
+  },
+};
+
+// Language switching functionality
+function initializeLanguageSwitcher() {
+  // Handle language button clicks
+  document.querySelectorAll(".lang-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      // Remove active class from all buttons
+      document.querySelectorAll(".lang-btn").forEach((btn) => {
+        btn.classList.remove("active");
+      });
+
+      // Add active class to clicked button
+      button.classList.add("active");
+
+      // Get the language code
+      const lang = button.getAttribute("data-lang");
+
+      // Update translations
+      updateTranslations(lang);
+
+      // Store selected language
+      localStorage.setItem("selectedLanguage", lang);
+    });
+  });
+
+  // Set initial active language based on localStorage or default to Dutch
+  const savedLang = localStorage.getItem("selectedLanguage") || "nl";
+  document
+    .querySelector(`.lang-btn[data-lang="${savedLang}"]`)
+    .classList.add("active");
+  updateTranslations(savedLang);
+}
+
+function updateTranslations(lang) {
+  // Update all elements with data-translate attribute
+  document.querySelectorAll("[data-translate]").forEach((element) => {
+    const key = element.getAttribute("data-translate");
+    if (translations[lang] && translations[lang][key]) {
+      element.textContent = translations[lang][key];
+    }
+  });
+}
+
+// Initialize language switcher when the page loads
+document.addEventListener("DOMContentLoaded", initializeLanguageSwitcher);

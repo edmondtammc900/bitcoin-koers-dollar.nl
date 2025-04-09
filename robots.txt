@@ -1,6 +1,10 @@
+# Allow all major search engines
 User-agent: *
 Allow: /
-Disallow: /private/
-Disallow: /admin/
 
-Sitemap: https://bitcoin-koers-dollar.nl/sitemap.xml 
+# Block any specific areas (optional examples, if needed)
+# Disallow: /admin/
+# Disallow: /private/
+
+# Sitemap location
+Sitemap: https://bitcoin-koers-dollar.nl/sitemap.xml
