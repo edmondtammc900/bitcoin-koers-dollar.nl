@@ -167,7 +167,7 @@ body {
   .nav-cta-btn2 {
     display: block;
     position: absolute;
-    right: 48px;
+    right: 50px;
     top: 45%;
     transform: translateY(-50%);
     padding: 0.3rem 0.8rem !important;
@@ -184,7 +184,7 @@ body {
   .burger {
     display: block;
     position: absolute;
-    right: 10px;
+    right: 12px;
     top: 45%;
     transform: translateY(-50%);
   }

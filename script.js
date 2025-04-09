@@ -109,15 +109,8 @@ async function fetchBitcoinPrice() {
     bitcoinPriceElement.textContent = "Laden...";
     priceChangeElement.textContent = "";
 
-    // Try CoinDesk v1 API first
     const response = await fetch(
-      "https://api.coindesk.com/v1/bpi/currentprice.json",
-      {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      }
+      "https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT"
     );
 
     if (!response.ok) {
@@ -125,46 +118,18 @@ async function fetchBitcoinPrice() {
     }
 
     const data = await response.json();
-
-    // Get the USD price and remove commas
-    const price = parseFloat(data.bpi.USD.rate.replace(/,/g, ""));
-
-    // Calculate 24h change (Note: CoinDesk doesn't provide 24h change directly)
-    // We'll use the last price to calculate the change
-    const change = lastPrice ? ((price - lastPrice) / lastPrice) * 100 : 0;
+    const price = parseFloat(data.lastPrice);
+    const change = parseFloat(data.priceChangePercent);
 
     return {
       price: price,
       change: change,
     };
   } catch (error) {
-    console.error("Error fetching Bitcoin price from CoinDesk:", error);
-
-    // Try fallback to Binance API if CoinDesk fails
-    try {
-      const fallbackResponse = await fetch(
-        "https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT"
-      );
-      if (!fallbackResponse.ok) {
-        throw new Error(
-          `Fallback API error! status: ${fallbackResponse.status}`
-        );
-      }
-      const fallbackData = await fallbackResponse.json();
-
-      return {
-        price: parseFloat(fallbackData.lastPrice),
-        change: parseFloat(fallbackData.priceChangePercent),
-      };
-    } catch (fallbackError) {
-      console.error(
-        "Error fetching Bitcoin price from fallback API:",
-        fallbackError
-      );
-      bitcoinPriceElement.textContent = "Koers niet beschikbaar";
-      priceChangeElement.textContent = "";
-      return null;
-    }
+    console.error("Error fetching Bitcoin price:", error);
+    bitcoinPriceElement.textContent = "Koers niet beschikbaar";
+    priceChangeElement.textContent = "";
+    return null;
   }
 }
 
