@@ -338,9 +338,72 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-// Market News Feed
-const marketNewsContainer = document.getElementById("market-news");
+// Ticker functionality
+const tickerItems = document.querySelector(".ticker-items");
+let tickerPosition = 0;
+let isPaused = false;
+const tickerSpeed = 1; // pixels per frame (adjust this value to control speed)
 
+function updateTicker(newsItems) {
+  if (!newsItems || newsItems.length === 0) {
+    tickerItems.textContent = "Geen nieuws beschikbaar";
+    return;
+  }
+
+  // Create ticker items with news titles and links
+  const tickerHTML = newsItems
+    .map((item) => {
+      return `<a href="${item.link}" target="_blank" class="ticker-item">${item.title}</a>`;
+    })
+    .join(" ");
+
+  // Duplicate the items multiple times for smooth continuous scrolling
+  const duplicatedItems =
+    tickerHTML +
+    " " +
+    tickerHTML +
+    " " +
+    tickerHTML +
+    " " +
+    tickerHTML +
+    " " +
+    tickerHTML;
+
+  tickerItems.innerHTML = duplicatedItems;
+
+  // Reset position
+  tickerPosition = 0;
+  tickerItems.style.transform = `translateX(${tickerPosition}px)`;
+}
+
+// Animation frame function
+function animateTicker() {
+  if (!isPaused) {
+    tickerPosition -= tickerSpeed;
+
+    // When we've scrolled one full set of items, reset to the beginning of the second set
+    if (tickerPosition <= -tickerItems.offsetWidth / 5) {
+      tickerPosition = 0;
+    }
+
+    tickerItems.style.transform = `translateX(${tickerPosition}px)`;
+  }
+  requestAnimationFrame(animateTicker);
+}
+
+// Start animation
+requestAnimationFrame(animateTicker);
+
+// Pause on hover
+tickerItems.addEventListener("mouseenter", () => {
+  isPaused = true;
+});
+
+tickerItems.addEventListener("mouseleave", () => {
+  isPaused = false;
+});
+
+// Update the fetchMarketNews function to also update the ticker
 async function fetchMarketNews() {
   try {
     const response = await fetch(
@@ -355,26 +418,25 @@ async function fetchMarketNews() {
 
     // Extract items from RSS feed
     const items = xmlDoc.getElementsByTagName("item");
-    const newsItems = Array.from(items).map((item) => {
-      const title = item.getElementsByTagName("title")[0]?.textContent || "";
-      const link = item.getElementsByTagName("link")[0]?.textContent || "";
-      return { title, link };
-    });
+    const newsItems = Array.from(items).map((item) => ({
+      title: item.getElementsByTagName("title")[0]?.textContent || "",
+      link: item.getElementsByTagName("link")[0]?.textContent || "",
+    }));
 
+    // Update both news feed and ticker
     displayMarketNews(newsItems);
+    updateTicker(newsItems);
   } catch (error) {
-    console.error("Error fetching market news:", error);
-    marketNewsContainer.innerHTML = `
-      <div class="news-item">
-        <p>Nieuws niet beschikbaar op dit moment. Probeer het later opnieuw.</p>
-      </div>
-    `;
+    console.error("Error fetching news:", error);
+    document.getElementById("market-news").innerHTML =
+      "<p>Nieuws kon niet worden geladen. Probeer het later opnieuw.</p>";
+    tickerItems.textContent = "Nieuws kon niet worden geladen";
   }
 }
 
 function displayMarketNews(newsItems) {
   if (!newsItems || !Array.isArray(newsItems) || newsItems.length === 0) {
-    marketNewsContainer.innerHTML = `
+    document.getElementById("market-news").innerHTML = `
       <div class="news-item">
         <p>Geen nieuws beschikbaar op dit moment.</p>
       </div>
@@ -398,7 +460,7 @@ function displayMarketNews(newsItems) {
     })
     .join("");
 
-  marketNewsContainer.innerHTML = newsHTML;
+  document.getElementById("market-news").innerHTML = newsHTML;
 }
 
 // Initial news fetch
