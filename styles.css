@@ -1352,3 +1352,33 @@ main {
     padding-top: 75px; /* Adjusted for mobile */
   }
 }
+
+.interval-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 5px;
+  z-index: 1;
+}
+
+.interval-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.interval-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.interval-btn.active {
+  background: var(--primary-color);
+  color: #000;
+  border-color: var(--primary-color);
+}

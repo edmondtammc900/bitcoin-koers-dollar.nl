@@ -120,10 +120,12 @@ async function fetchBitcoinPrice() {
     const data = await response.json();
     const price = parseFloat(data.lastPrice);
     const change = parseFloat(data.priceChangePercent);
+    const volume = parseFloat(data.volume);
 
     return {
       price: price,
       change: change,
+      volume: volume,
     };
   } catch (error) {
     console.error("Error fetching Bitcoin price:", error);
@@ -148,11 +150,148 @@ async function fetchHistoricalData(currentPrice) {
   }
 }
 
+// Store volume history
+let volumeHistory = [];
+
+// Store volume chart instance
+let volumeChartInstance = null;
+let currentInterval = "5m"; // Default interval
+
+async function fetchHistoricalVolume(interval = "5m") {
+  try {
+    let limit;
+    switch (interval) {
+      case "1m":
+        limit = 1440; // 24 hours * 60 minutes
+        break;
+      case "5m":
+        limit = 288; // 24 hours * 12 points per hour
+        break;
+      case "1h":
+        limit = 24; // 24 hours
+        break;
+      default:
+        limit = 288;
+    }
+
+    const response = await fetch(
+      `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=${limit}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.map((item) => ({
+      timestamp: new Date(item[0]),
+      volume: parseFloat(item[5]),
+    }));
+  } catch (error) {
+    console.error("Error fetching historical volume:", error);
+    return null;
+  }
+}
+
+function updateVolumeChart(volumeData, interval = "5m") {
+  if (!volumeData) return;
+
+  const ctx = document.getElementById("volumeChart").getContext("2d");
+
+  if (volumeChartInstance) {
+    volumeChartInstance.destroy();
+  }
+
+  const timeFormat = {
+    "1m": { hour: "2-digit", minute: "2-digit" },
+    "5m": { hour: "2-digit", minute: "2-digit" },
+    "1h": { hour: "2-digit" },
+  }[interval];
+
+  const maxTicks = {
+    "1m": 24,
+    "5m": 12,
+    "1h": 6,
+  }[interval];
+
+  volumeChartInstance = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: volumeData.map((item) =>
+        new Date(item.timestamp).toLocaleTimeString("nl-NL", timeFormat)
+      ),
+      datasets: [
+        {
+          label: `Handelsvolume (BTC) - ${
+            interval === "1m" ? "1分鐘" : interval === "5m" ? "5分鐘" : "1小時"
+          }`,
+          data: volumeData.map((item) => item.volume),
+          backgroundColor: "rgba(247, 147, 26, 0.5)",
+          borderColor: "rgba(247, 147, 26, 1)",
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: "rgba(255, 255, 255, 0.1)",
+          },
+          ticks: {
+            color: "#fff",
+          },
+        },
+        x: {
+          grid: {
+            color: "rgba(255, 255, 255, 0.1)",
+          },
+          ticks: {
+            color: "#fff",
+            maxRotation: 0,
+            autoSkip: true,
+            maxTicksLimit: maxTicks,
+          },
+        },
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: "#fff",
+          },
+        },
+      },
+    },
+  });
+}
+
+// Add event listeners for interval toggle buttons
+document.querySelectorAll(".interval-btn").forEach((button) => {
+  button.addEventListener("click", async () => {
+    // Update active state
+    document
+      .querySelectorAll(".interval-btn")
+      .forEach((btn) => btn.classList.remove("active"));
+    button.classList.add("active");
+
+    // Update interval and fetch new data
+    currentInterval = button.dataset.interval;
+    const volumeData = await fetchHistoricalVolume(currentInterval);
+    if (volumeData) {
+      updateVolumeChart(volumeData, currentInterval);
+    }
+  });
+});
+
 async function updateBitcoinPrice() {
   const data = await fetchBitcoinPrice();
   if (data && data.price) {
     const price = data.price;
     const change = data.change;
+    const volume = data.volume;
 
     // Format price in Dutch locale with USD symbol
     bitcoinPriceElement.textContent = `$${price.toLocaleString("nl-NL", {
@@ -171,6 +310,12 @@ async function updateBitcoinPrice() {
     const historicalData = await fetchHistoricalData(price);
     if (historicalData) {
       updateChart(historicalData);
+    }
+
+    // Update volume data with current interval
+    const volumeData = await fetchHistoricalVolume(currentInterval);
+    if (volumeData) {
+      updateVolumeChart(volumeData, currentInterval);
     }
   }
 }
@@ -270,7 +415,7 @@ function updateChart(historicalData) {
 // Initial price update
 updateBitcoinPrice();
 
-// Update price every 60 seconds
+// Update price every 5 seconds
 setInterval(updateBitcoinPrice, 5000);
 
 // Tooltip functionality
