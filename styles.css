@@ -167,7 +167,7 @@ body {
   .nav-cta-btn2 {
     display: block;
     position: absolute;
-    right: 70px;
+    right: 48px;
     top: 45%;
     transform: translateY(-50%);
     padding: 0.3rem 0.8rem !important;
@@ -184,7 +184,7 @@ body {
   .burger {
     display: block;
     position: absolute;
-    right: 20px;
+    right: 10px;
     top: 45%;
     transform: translateY(-50%);
   }
@@ -237,7 +237,7 @@ body {
 
   #home .container {
     padding: 0 15px;
-    gap: 1.5rem;
+    gap: 1rem;
   }
 
   #home h1 {
